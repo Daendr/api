@@ -1,0 +1,8 @@
+{
+  "Url": "https://jsonplaceholder.typicode.com/",
+  "Posts": "/posts",
+  "Users": "/users",
+  "ParamPost": "/posts/{}",
+  "ParamUsers": "/users/{}",
+  "EmptyContent": "{}"
+}

@@ -1,30 +1,39 @@
+import json
+
 import pytest
-from pages.main_page import MainPage
+import requests
+from py_selenium_auto_core.logging.logger import Logger
+from apiUtils.apiutils import ApiUtils
+from models.root import Root
+from models.user import User
+from utilities.configManager import ConfigManager
 from utilities.generateRandomText import GenerateRandomText
 
 
 class TestApi:
 
-    @staticmethod
+    _id_step_2 = 99
+    _id_step_3 = 150
+    _expected_userId = 10
+
     @pytest.mark.test_api
-    def test_api():
-        log_message = "Шаг 1. Отправьте запрос GET, чтобы получить все сообщения (/posts)."
-        MainPage.get(log_message, 200, 'posts')
+    def test_api(self):
+        Logger.info("Шаг 1. Отправьте запрос GET, (/posts).")
+        responce_from_url = ApiUtils.rest_get(ConfigManager.get_config_value("Posts"))
+        assert responce_from_url.status_code == requests.codes.ok, "Статус код не равен 200"
+        assert ApiUtils.content_type(responce_from_url), "Тело ответа не JSON"
+        assert ApiUtils.id_sort(responce_from_url), "Сообщения не упорядочены по возрастанию"
 
-        log_message = "Шаг 2. Отправьте запрос GET, чтобы получить пост с id=99 (/posts/99)."
-        MainPage.get(log_message, 200, 'posts', 99)
+        Logger.info("Шаг 2. Отправьте запрос GET, с id=99")
+        responce_from_url = ApiUtils.rest_get(ConfigManager.get_config_value("ParamPost").format(str(self._id_step_2)))
+        assert responce_from_url.status_code == requests.codes.ok, "Статус код не равен 200"
+        assert Root.from_dict(json.loads(responce_from_url.text)).id == self._id_step_2, "id not equals"
+        assert Root.from_dict(json.loads(responce_from_url.text)).userId == self._expected_userId, "userId not equals"
+        assert Root.from_dict(json.loads(responce_from_url.text)).title, "Заголовок не должен быть пустым"
+        assert Root.from_dict(json.loads(responce_from_url.text)).body, "Тело не должно быть пустым"
 
-        log_message = "Шаг 3. Отправьте запрос GET, чтобы получить пост с id=150 (/posts/150)."
-        MainPage.get(log_message, 404, 'posts', 150)
-
-        log_message = ("Шаг 4. Отправьте POST-запрос, чтобы создать сообщение с userId=1"
-                   " и случайным телом и случайным заголовком (/posts).")
-        post_data = {
-            'title': GenerateRandomText.generate_random_text(),
-            'body': GenerateRandomText.generate_random_text(),
-            'userId': 1
-        }
-        MainPage.post(log_message, post_data, 'posts', 201)
-
-        log_message = ("Шаг 5. Отправьте запрос GET, чтобы получить пользователей (/users).")
-        MainPage.get(log_message, 200, 'users', 5)
+        Logger.info("Шаг 3. Отправьте запрос GET, с id=150.")
+        responce_from_url = ApiUtils.rest_get(ConfigManager.get_config_value("ParamPost").format(str(self._id_step_3)))
+        assert responce_from_url.status_code == requests.codes.not_found, "Статус код не равен 404"
+        assert responce_from_url.text == ConfigManager.get_config_value("EmptyContent"),\
+            "Тело ответа не должно содержать данных при статусе 404"
