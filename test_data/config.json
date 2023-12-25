@@ -4,5 +4,6 @@
   "Users": "/users",
   "ParamPost": "/posts/{}",
   "ParamUsers": "/users/{}",
-  "EmptyContent": "{}"
+  "EmptyContent": "{}",
+  "Value": "id"
 }
