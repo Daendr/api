@@ -24,7 +24,7 @@ class ApiUtils:
     def get_content_type(response):
             response.raise_for_status()
             content_type = response.headers.get('content-type')
-            return 'application/json' not in content_type
+            return 'application/json' in content_type
 
     @staticmethod
     def is_sort_by_value(response, value):
